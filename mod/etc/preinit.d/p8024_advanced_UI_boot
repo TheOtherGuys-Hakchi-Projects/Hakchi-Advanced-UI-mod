@@ -1,0 +1,5 @@
+  if [ "$cfg_advui_enabled" != "0" ]; then
+    mount_bind "$rootfs/etc/advanced_ui_mod/chmenu" "$rootfs/bin/chmenu" && echo "overmounted $rootfs/etc/advanced_ui_mod/chmenu on $rootfs/bin/chmenu"
+    run_advui_boot_functions
+  fi
+  
