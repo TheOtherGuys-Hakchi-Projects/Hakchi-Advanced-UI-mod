@@ -22,7 +22,7 @@ boot_theme_randomiser(){
 	mountpoint -q "$original_theme" && umount "$original_theme"
 	[ ! -z $theme ] && [ -d "$theme_path/$theme" ] && mount -t overlayfs -o lowerdir=$original_theme,upperdir="$theme_path/$theme" overlayfs $original_theme
 	
-  	echo "$rootfs/etc/advanced_ui_mod/$theme" > "$rootfs/lasttheme"
+  	echo "$theme" > "$$rootfs/etc/advanced_ui_mod/lasttheme"
   fi
 }
 
@@ -90,7 +90,7 @@ chmenu_theme_randomiser(){
 	mountpoint -q "$original_theme" && umount "$original_theme"
 	[ ! -z $theme ] && [ -d "$theme_path/$theme" ] && mount -t overlayfs -o lowerdir=$original_theme,upperdir="$theme_path/$theme" overlayfs $original_theme
 	
-  	echo "$rootfs/etc/advanced_ui_mod/$theme" > "$rootfs/lasttheme"
+  	echo "$theme" > "$$rootfs/etc/advanced_ui_mod/lasttheme"
   fi
 }
 
