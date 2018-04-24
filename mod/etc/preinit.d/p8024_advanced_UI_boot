@@ -1,5 +1,8 @@
-  if [ "$cfg_advui_enabled" != "0" ]; then
-    mount_bind "$rootfs/etc/advanced_ui_mod/chmenu" "$rootfs/bin/chmenu" && echo "overmounted $rootfs/etc/advanced_ui_mod/chmenu on $rootfs/bin/chmenu"
-    run_advui_boot_functions
-  fi
-  
+if [ "$cfg_advui_enabled" != "0" ]; then
+if [ "$(cksum "$rootfs/bin/chmenu" | awk '{ print $1; }')" != "$(cksum "$rootfs/etc/advanced_ui_mod/chmenu" | awk '{ print $1; }')" ]; then
+  copy "$rootfs/bin/chmenu"  "$rootfs/etc/advanced_ui_mod/chmenu_backup"
+  copy "$rootfs/etc/advanced_ui_mod/chmenu" "$rootfs/bin/chmenu"
+  chmod +x "$rootfs/bin/chmenu"
+fi
+  run_advui_boot_functions
+fi
