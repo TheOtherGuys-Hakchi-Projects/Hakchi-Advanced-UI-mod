@@ -1,61 +1,68 @@
-
 # ADVANCED UI BOOT FUNCTIONS ####
+theme_path="$mountpoint/media/$modname/themes/$sftype"
+theme_folder="$(cat "$desktop_file" | grep -F 'Name=' | sed -r 's/Back$//g;s/Name=//g;s/ /_/g' | awk '{print tolower($0)}')"
+state_path="$mountpoint$profilepath/$modname"
+folder="$(cat "$state_path/menu")"
+CLV="CLV-S-00"
+active_folder="$CLV$folder"
+last_theme="none"
+gStorage="$(findGameStorage)"
+original_theme="none"
+bindPath="$theme_path/$theme"
+music_path="$mountpoint/media/hakchi/menu_music"
+silent_wav="$rootfs/usr/share/advanced_music_hack/bgm_boot.wav"
+wav_file="$(ls -1 $music_path/*.wav $music_path/*.WAV 2>/dev/null | head -$((${RANDOM} % $(ls -1 $music_path/*.wav $music_path/*.WAV 2>/dev/null | wc -l) + 1)) | tail -1)"
 
-boot_theme_randomiser(){
+boot_theme_randomiser() {
 
   if [ "$cfg_advui_random_theme_boot" != "0" ]; then
-    local region="$(cat "$rootfs/etc/clover/ui")"
-    local theme_path="$mountpoint/media/hakchi/themes"
-    local original_theme="$mountpoint/usr/share/ui/$region"
-    local last_theme="/"
+    case "$sftype" in
+    nes | hvc)
+      original_theme="$mountpoint/usr/share/clover-ui"
+      ;;
+    snes)
+      original_theme="$mountpoint/usr/share/ui/$sftype-$sfregion"
+      ;;
+    shvc)
+      original_theme="$mountpoint/usr/share/ui/shvc"
+      ;;
+    esac
 
     [ -f "$rootfs/etc/advanced_ui_mod/lasttheme" ] && local last_theme=$(cat "$rootfs/etc/advanced_ui_mod/lasttheme")
-    [ ! -d "$theme_path" ] && local theme_path="$rootfs/usr/share/themes"
+    [ ! -d "$theme_path" ] && local theme_path="$rootfs/usr/share/themes/$sftype"
     local theme="$last_theme"
-	
-    while [ $theme == $last_theme ]
-    do
-      local theme="$(ls -1 $theme_path/ 2>/dev/null | head -$((${RANDOM} % `ls -1 $theme_path/ 2>/dev/null | wc -l` + 1)) | tail -1)"
+    while [ "$theme" == "$last_theme" ]; do
+      local theme="$(ls -1 "$theme_path" | shuf | head -n1)"
     done
+
     mountpoint -q "$original_theme" && umount "$original_theme"
-    [ ! -z $theme ] && [ -d "$theme_path/$theme" ] && mount -t overlayfs -o lowerdir=$original_theme,upperdir="$theme_path/$theme" overlayfs $original_theme
-	
-  	echo "$theme" > "$rootfs/etc/advanced_ui_mod/lasttheme"
+    [ ! -z $theme ] && [ -d "$bindPath" ] && mount -t overlayfs -o lowerdir="$original_theme",upperdir="$bindPath" overlayfs "$original_theme"
+
+    echo "$theme" >"$rootfs/etc/advanced_ui_mod/lasttheme"
   fi
 }
 
-boot_music_randomiser(){
+boot_music_randomiser() {
 
   if [ "$cfg_advui_random_music_boot" != "0" ]; then
-    local music_path="$mountpoint/media/hakchi/menu_music"
-    local silent_wav="$rootfs/usr/share/advanced_music_hack/bgm_boot.wav"
-    local wav_file="$(ls -1 $music_path/*.wav $music_path/*.WAV 2>/dev/null | head -$((${RANDOM} % `ls -1 $music_path/*.wav $music_path/*.WAV 2>/dev/null | wc -l` + 1)) | tail -1)"
-	
+
     [ ! -d "$music_path" ] && music_path="$installpath/menu_music"
 
     if [ -f "$wav_file" ]; then
       echo "WAV files detected..."
-      
+
       # NES Mini
       advanced_music_hack_bind \
       "$wav_file" \
       "$wav_file" \
       "$mountpoint/usr/share/clover-ui/resources/sounds/hvc"
-        
-      
+
       # SNES Mini (USA)
       advanced_music_hack_bind \
       "$silent_wav" \
       "$wav_file" \
-      "$mountpoint/usr/share/ui/snes-usa/resources/sounds/hvc"
-        
-      
-      # SNES Mini (EUR)
-      advanced_music_hack_bind \
-      "$silent_wav" \
-      "$wav_file" \
-      "$mountpoint/usr/share/ui/snes-eur/resources/sounds/hvc"
-      
+      "$mountpoint/usr/share/ui/$sftype-$sfregion/resources/sounds/hvc"
+
       # Super Famicom Mini (JAP)
       advanced_music_hack_bind \
       "$silent_wav" \
@@ -67,61 +74,60 @@ boot_music_randomiser(){
 
 # ADVANCED UI CHMENU FUNCTIONS ####
 
-chmenu_theme_randomiser(){
+chmenu_theme_randomiser() {
 
   if [ "$cfg_advui_random_theme_chmenu" != "0" ]; then
-    local region="$(cat "$rootfs/etc/clover/ui")"
-    local theme_path="$mountpoint/media/hakchi/themes"
-    local original_theme="$mountpoint/usr/share/ui/$region"
-    local last_theme="/"
+    case "$sftype" in
+    nes | hvc)
+      original_theme="$mountpoint/usr/share/clover-ui"
+      ;;
+    snes)
+      original_theme="$mountpoint/usr/share/ui/$sftype-$sfregion"
+      ;;
+    shvc)
+      original_theme="$mountpoint/usr/share/ui/shvc"
+      ;;
+    esac
 
     [ -f "$rootfs/etc/advanced_ui_mod/lasttheme" ] && local last_theme=$(cat "$rootfs/etc/advanced_ui_mod/lasttheme")
     [ ! -d "$theme_path" ] && local theme_path="$rootfs/usr/share/themes"
     local theme="$last_theme"
-    
-    while [ $theme == $last_theme ]
-    do
-      local theme="$(ls -1 $theme_path/ 2>/dev/null | head -$((${RANDOM} % `ls -1 $theme_path/ 2>/dev/null | wc -l` + 1)) | tail -1)"
+
+    while [ "$theme" == "$last_theme" ]; do
+      local theme="$(ls -1 "$theme_path" | shuf | head -n1)"
     done
+
     mountpoint -q "$original_theme" && umount "$original_theme"
-    [ ! -z $theme ] && [ -d "$theme_path/$theme" ] && mount -t overlayfs -o lowerdir=$original_theme,upperdir="$theme_path/$theme" overlayfs $original_theme
-	
-  	echo "$theme" > "$rootfs/etc/advanced_ui_mod/lasttheme"
+    cd "$bindPath" && find -type f | while IFS= read -r tfile; do
+      [ ! -z "$theme" ] && [ -f "$bindPath/$tfile" ] && mount_bind "$bindPath/$tfile" "$original_theme/$tfile"
+    done
+    cd - >/dev/null
+
+    echo "$theme" >"$rootfs/etc/advanced_ui_mod/lasttheme"
   fi
 }
 
-chmenu_music_randomiser(){
+chmenu_music_randomiser() {
 
   if [ "$cfg_advui_random_music_chmenu" != "0" ]; then
-    local music_path="$mountpoint/media/hakchi/menu_music"
-    local silent_wav="$rootfs/usr/share/advanced_music_hack/bgm_boot.wav"
-    local wav_file="$(ls -1 $music_path/*.wav $music_path/*.WAV 2>/dev/null | head -$((${RANDOM} % `ls -1 $music_path/*.wav $music_path/*.WAV 2>/dev/null | wc -l` + 1)) | tail -1)"
-    
+
     [ ! -d "$music_path" ] && music_path="$installpath/menu_music"
 
     if [ -f "$wav_file" ]; then
       echo "WAV files detected..."
-      
+
       # NES Mini
       advanced_music_hack_bind \
       "$wav_file" \
       "$wav_file" \
       "$mountpoint/usr/share/clover-ui/resources/sounds/hvc"
-        
-      
-      # SNES Mini (USA)
+
+      # SNES Mini (USA-EUR)
       advanced_music_hack_bind \
       "$silent_wav" \
       "$wav_file" \
-      "$mountpoint/usr/share/ui/snes-usa/resources/sounds/hvc"
-        
-      
-      # SNES Mini (EUR)
-      advanced_music_hack_bind \
-      "$silent_wav" \
-      "$wav_file" \
-      "$mountpoint/usr/share/ui/snes-eur/resources/sounds/hvc"
-      
+      "$mountpoint/usr/share/ui/$sftype-$sfregion/resources/sounds/hvc"
+
       # Super Famicom Mini (JAP)
       advanced_music_hack_bind \
       "$silent_wav" \
@@ -131,31 +137,54 @@ chmenu_music_randomiser(){
   fi
 }
 
-chmenu_specific_folder_theme(){
+chmenu_specific_folder_theme() {
 
   if [ "$cfg_advui_specific_folder_chmenu" != "0" ]; then
-    #defkorns do your thing here.
-    echo "running shit"
+    case "$sftype" in
+    nes | hvc)
+      original_theme="$mountpoint/usr/share/clover-ui"
+      ;;
+    snes)
+      original_theme="$mountpoint/usr/share/ui/$sftype-$sfregion"
+      ;;
+    shvc)
+      original_theme="$mountpoint/usr/share/ui/shvc"
+      ;;
+    esac
+
+    [ -f "$state_path/lasttheme" ] && local last_theme=$(cat "$rootfs/etc/advanced_ui_mod/lasttheme")
+    [ ! -d "$theme_path" ] && local theme_path="$rootfs/usr/share/themes/$sftype"
+    local theme="$last_theme"
+
+    find "$gStorage" -maxdepth 3 -type f -name "$active_folder.desktop" | sort -u | while IFS= read -r desktop_file; do
+      local bindPath="$theme_path/$theme_folder"
+      mountpoint -q "$original_theme" && umount "$original_theme"
+      cd "$bindPath" && find -type f | while IFS= read -r tfile; do
+        [ ! -z "$theme" ] && [ -f "$bindPath/$tfile" ] && mount_bind "$bindPath/$tfile" "$original_theme/$tfile"
+      done
+      cd - >/dev/null
+    done
+    echo "$theme" >"$rootfs/etc/advanced_ui_mod/lasttheme"
   fi
 }
 
 # ADVANCED UI INTERNAL MODULE FUNCTIONS ####
 
-run_advui_boot_functions(){
+run_advui_boot_functions() {
   #Run all the boot_ functions. If they are enabled they will run.
   boot_theme_randomiser
   boot_music_randomiser
-  
+
 }
 
-run_advui_chmenu_functions(){
+run_advui_chmenu_functions() {
   #Run all the chmenu_ functions. If they are enabled they will run.
   chmenu_theme_randomiser
   chmenu_music_randomiser
   chmenu_specific_folder_theme
 }
 
-advanced_music_hack_bind(){
+advanced_music_hack_bind() {
   ([ -f "$1" ] && [ -f "$2" ] && [ -f "$3/bgm_boot.wav" ] && [ -f "$3/bgm_home.wav" ]) || return 1
   mount_bind "$1" "$3/bgm_boot.wav" && echo "overmounted $1 on $3/bgm_boot.wav" || return 1
   mount_bind "$2" "$3/bgm_home.wav" && echo "overmounted $2 on $3/bgm_home.wav" || return 1

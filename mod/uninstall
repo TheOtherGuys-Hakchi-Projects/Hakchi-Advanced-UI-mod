@@ -1,6 +1,6 @@
 rm -f "$rootfs/etc/preinit.d/b8024_advanced_UI_functions"
 rm -f "$rootfs/etc/preinit.d/p8024_advanced_UI_boot"
-rm -rf "$rootfs/advanced_ui_mod"
+rm -rf "$rootfs/etc/advanced_ui_mod"
 
 unset cfg_advui_enabled
 unset cfg_advui_random_theme_boot
