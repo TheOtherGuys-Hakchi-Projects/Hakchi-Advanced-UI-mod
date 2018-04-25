@@ -39,7 +39,7 @@ boot_music_randomiser(){
   if [ "$cfg_advui_random_music_boot" != "0" ]; then
     local music_path="$mountpoint/media/hakchi/menu_music"
     local silent_wav="$rootfs/usr/share/advanced_music_hack/bgm_boot.wav"
-    local wav_file="$(ls -1 $music_path/*.wav $music_path/*.WAV 2>/dev/null | head -$((${RANDOM} % $(ls -1 $music_path/*.wav $music_path/*.WAV 2>/dev/null | wc -l) + 1)) | tail -1)"
+    local wav_file="$(ls -1 $music_path/*.wav $music_path/*.WAV | shuf | head -n1)"
 
     [ ! -d "$music_path" ] && music_path="$installpath/menu_music"
 
@@ -114,7 +114,7 @@ chmenu_music_randomiser(){
   if [ "$cfg_advui_random_music_chmenu" != "0" ]; then
     local music_path="$mountpoint/media/hakchi/menu_music"
     local silent_wav="$rootfs/usr/share/advanced_music_hack/bgm_boot.wav"
-    local wav_file="$(ls -1 $music_path/*.wav $music_path/*.WAV 2>/dev/null | head -$((${RANDOM} % $(ls -1 $music_path/*.wav $music_path/*.WAV 2>/dev/null | wc -l) + 1)) | tail -1)"
+    local wav_file="$(ls -1 $music_path/*.wav $music_path/*.WAV | shuf | head -n1)"
 
     [ ! -d "$music_path" ] && music_path="$installpath/menu_music"
 
