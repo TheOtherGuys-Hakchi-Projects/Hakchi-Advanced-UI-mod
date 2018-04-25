@@ -169,9 +169,15 @@ chmenu_specific_folder_theme(){
     [ -f "$state_path/lasttheme" ] && local last_theme=$(cat "$rootfs/etc/advanced_ui_mod/lasttheme")
     [ ! -d "$theme_path" ] && local theme_path="$rootfs/usr/share/themes/$sftype"
     local theme="$last_theme"
+    if [ $folder == 000 ]; then
+       theme_folder="home-menu"
+    fi
 
     find "$gStorage" -maxdepth 3 -type f -name "$active_folder.desktop" | sort -u | while IFS= read -r desktop_file; do
-      local theme_folder="$(cat "$desktop_file" | grep -F 'Name=' | sed -r 's/Back$//g;s/Name=//g;s/ /_/g' | awk '{print tolower($0)}')"
+      cat "$desktop_file" | grep 'Name=Back' &> /dev/null
+      if [ $? != 0 ]; then
+         theme_folder="$(cat "$desktop_file" | grep -F 'Name=' | sed -r 's/Name=//g;s/ /_/g' | awk '{print tolower($0)}')"
+      fi
       local bindPath="$theme_path/$theme_folder"
       mountpoint -q "$original_theme" && umount "$original_theme"
       cd "$bindPath" && find -type f | while IFS= read -r tfile; do
